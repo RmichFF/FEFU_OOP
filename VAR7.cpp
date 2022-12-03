@@ -1,16 +1,4 @@
 ﻿
-/*О́тче наш, И́же еси́ на небесе́х!
-Да святи́тся и́мя Твое́,
-да прии́дет Ца́рствие Твое́,
-да бу́дет во́ля Твоя,
-я́ко на небеси́ и на земли́.
-Хлеб наш насу́щный даждь нам днесь;
-и оста́ви нам до́лги наша,
-я́коже и мы оставля́ем должнико́м нашим;
-и не введи́ нас во искуше́ние,
-но изба́ви нас от лука́ваго.*/
-
-
 #include <iostream>
 #include <string>
 #include <fstream>
@@ -27,34 +15,39 @@ struct scan_info
         int grey; // число градаций серого
 };
 
-void WriteToEnd(scan_info& rec, std::fstream& data, const int bufSize);
+void WriteToEnd(scan_info& rec, std::fstream& data, const int bufSize, std::string name);
 void Input(scan_info& rec);
 bool IsValid(bool val);
 bool operator == (const scan_info& a, const scan_info& b);
 
 int main()
 {
+    std::string filename = "C:\\Users\\dns\\Desktop\\test.bin";
     scan_info record;
-    std::fstream file("test.bin", std::ios_base::binary | std::ios_base::in);
+    std::fstream file(filename, std::ios_base::binary | std::ios_base::in);
     int addZero = 0;
     int bufint = 2;
     int fileSize = 0;
+    bool cont = true;
     if (!file.is_open())
         std::cout << "File does not exist!\n";
     else {
         if (file.peek() == EOF)
         {
             file.close();
-            file.open("test.bin", std::ios_base::binary | std::ios_base::app);
+            file.open(filename, std::ios_base::binary | std::ios_base::app);
             file.write((char*)&addZero, sizeof(int));
         }
-        while (true)
+        while (cont)
         {
             file.seekp(0, std::ios::end);
             fileSize = (int) file.tellp();
             file.close();
             Input(record);
-            WriteToEnd(record, file, fileSize);
+            WriteToEnd(record, file, fileSize, filename);
+            std::cout << "Continue? (1,0): ";
+            std::cin >> cont;
+            system("cls");
         }
     }
     return 0;
@@ -62,12 +55,12 @@ int main()
 
 
 
-void WriteToEnd(scan_info& rec, std::fstream& data, int bufSize)
+void WriteToEnd(scan_info& rec, std::fstream& data, int bufSize, std::string name)
 {
     scan_info temp;
     int count;
     bool recEq = false;
-    data.open("test.bin", std::ios_base::binary | std::ios_base::in);
+    data.open(name, std::ios_base::binary | std::ios_base::in);
     data.read((char*)&count, sizeof(int));
     while ((data.peek() != EOF) && !recEq) {
         data.read((char*)&temp.model, 20);
@@ -85,7 +78,7 @@ void WriteToEnd(scan_info& rec, std::fstream& data, int bufSize)
         data.read(buffer, bufSize - 4);
         buffer[bufSize - 4] = '\0';
         data.close();
-        data.open("test.bin", std::ios_base::binary | std::ios_base::out);
+        data.open(name, std::ios_base::binary | std::ios_base::out);
         data.write((char*)&count, sizeof(int));
         data.write(buffer, bufSize - 4);
         data.write((char*)&rec.model, 20);
