@@ -22,7 +22,7 @@ bool operator == (const scan_info& a, const scan_info& b);
 
 int main()
 {
-    std::string filename = "C:\\Users\\dns\\Desktop\\test.bin";
+    std::string filename = "test.bin";
     scan_info record;
     std::fstream file(filename, std::ios_base::binary | std::ios_base::in);
     int addZero = 0;
