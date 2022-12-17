@@ -7,12 +7,12 @@
 
 struct scan_info
 {
-    char model[20]; // наименование модели
+    std::string model; // наименование модели
     int price; // цена
-        double x_size; // горизонтальный размер области сканирования
-        double y_size; // вертикальный размер области сканирования
+    double x_size; // горизонтальный размер области сканирования
+    double y_size; // вертикальный размер области сканирования
     int optr; // оптическое разрешение
-        int grey; // число градаций серого
+    int grey; // число градаций серого
 };
 
 void WriteToEnd(scan_info& rec, std::fstream& data, const int bufSize, std::string name);
@@ -22,6 +22,7 @@ bool operator == (const scan_info& a, const scan_info& b);
 
 int main()
 {
+    bool creation = false;
     std::string filename = "test.bin";
     scan_info record;
     std::fstream file(filename, std::ios_base::binary | std::ios_base::in);
@@ -30,8 +31,18 @@ int main()
     int fileSize = 0;
     bool cont = true;
     if (!file.is_open())
-        std::cout << "File does not exist!\n";
-    else {
+    {
+        do {
+            std::cout << "File does not exist!\n I want to create it manually (0)\n Create file (1)\n";
+            std::cin >> creation;;
+        } while (IsValid(std::cin.fail()));
+        if (creation)
+        {
+            file.open(filename, std::ios_base::binary | std::ios_base::app);
+            //file.open(filename, std::ios_base::binary | std::ios_base::in)
+        }
+    }
+    if (file.is_open()) {
         if (file.peek() == EOF)
         {
             file.close();
@@ -41,7 +52,7 @@ int main()
         while (cont)
         {
             file.seekp(0, std::ios::end);
-            fileSize = (int) file.tellp();
+            fileSize = (int)file.tellp();
             file.close();
             Input(record);
             WriteToEnd(record, file, fileSize, filename);
@@ -63,7 +74,17 @@ void WriteToEnd(scan_info& rec, std::fstream& data, int bufSize, std::string nam
     data.open(name, std::ios_base::binary | std::ios_base::in);
     data.read((char*)&count, sizeof(int));
     while ((data.peek() != EOF) && !recEq) {
-        data.read((char*)&temp.model, 20);
+        char* cur = new char;
+        std::string curModel;
+        *cur = 1;
+        while (*cur != 0) // c '\0' отказывается работать
+        {
+            data.read(cur, 1);
+            if (*cur != 0)
+                curModel += *cur;
+        }
+        temp.model = curModel;
+        delete cur;
         data.read((char*)&temp.price, sizeof(int));
         data.read((char*)&temp.x_size, sizeof(double));
         data.read((char*)&temp.y_size, sizeof(double));
@@ -81,7 +102,7 @@ void WriteToEnd(scan_info& rec, std::fstream& data, int bufSize, std::string nam
         data.open(name, std::ios_base::binary | std::ios_base::out);
         data.write((char*)&count, sizeof(int));
         data.write(buffer, bufSize - 4);
-        data.write((char*)&rec.model, 20);
+        data.write(rec.model.c_str(), rec.model.length() + 1);
         data.write((char*)&rec.price, sizeof(int));
         data.write((char*)&rec.x_size, sizeof(double));
         data.write((char*)&rec.y_size, sizeof(double));
@@ -98,13 +119,7 @@ void Input(scan_info& rec)
 {
     std::string inp;
     std::cout << "Model: ";
-    std::cin >> inp;
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-    for (int i = 0; i <= 18; i++)
-        if (i > (inp.size() - 1))
-            rec.model[i] = '\0';
-        else rec.model[i] = inp[i];
-    rec.model[19] = '\0';
+    std::cin >> rec.model;
     system("cls");
     do {
         std::cout << "Price: ";
@@ -128,9 +143,6 @@ void Input(scan_info& rec)
     } while (IsValid(std::cin.fail()));
 }
 
-
-
-
 bool IsValid(bool val)
 {
     system("cls");
@@ -147,12 +159,5 @@ bool IsValid(bool val)
 
 bool operator == (const scan_info& a, const scan_info& b)
 {
-    int i = 0;
-    bool arrEq = true;
-    while (arrEq && i <= 19) {
-        if (a.model[i] != b.model[i])
-            arrEq = false;
-        i++;
-    }
-    return arrEq && (a.price == b.price) && (a.x_size == b.x_size) && (a.y_size == b.y_size) && (a.optr == b.optr) && (a.grey == b.grey);
+    return (a.model != b.model) && (a.price == b.price) && (a.x_size == b.x_size) && (a.y_size == b.y_size) && (a.optr == b.optr) && (a.grey == b.grey);
 }
