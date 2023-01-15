@@ -76,6 +76,7 @@ class PublicElevator : public Elevator
 						workTime[0] += 1 + 0.1 * (curPeople - maxPeople);
 					else workTime[0] += 1;
 				}
+				curPeople = 0;
 			}
 			else std::cout << modelName << " is Empty!\n";
 		}
