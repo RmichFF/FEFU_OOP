@@ -1,1 +1,2 @@
 C:\Users\dns\source\repos\GrandFinale\Debug\GrandFinale.exe
+D:\FEFU_OOP\GrandFinale\Debug\GrandFinale.exe
