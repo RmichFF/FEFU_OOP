@@ -68,14 +68,50 @@ public:
         using pointer = Type*;
         using reference = Type&;
 
+        Iterator(Container::Iterator& o) : m_ptr(o.m_ptr) {}
+        Iterator(Container::Iterator&& o) noexcept : m_ptr(std::move(o.m_ptr))
+        {
+            o.m_ptr = nullptr;
+        }
         Iterator(pointer ptr) : m_ptr(ptr) {}
+        ~Iterator() {}
 
         reference operator*() const { return *m_ptr; }
         pointer operator->() { return m_ptr; }
         Iterator& operator++() { m_ptr++; return *this; }
+        Iterator& operator--() { m_ptr--; return *this; }
+        Iterator& operator+(int n) { m_ptr = m_ptr + n; return *this; }
+        Iterator& operator-(int n) { m_ptr = m_ptr - n; return *this; }
+        Iterator& operator+=(int n) { m_ptr = m_ptr + n; return *this; }
+        Iterator& operator-=(int n) { m_ptr = m_ptr - n; return *this; }
         Iterator operator++(int) { Iterator tmp = *this; ++(*this); return tmp; }
+        Iterator operator--(int) { Iterator tmp = *this; --(*this); return tmp; }
+
         friend bool operator== (const Iterator& a, const Iterator& b) { return a.m_ptr == b.m_ptr; };
         friend bool operator!= (const Iterator& a, const Iterator& b) { return a.m_ptr != b.m_ptr; };
+        friend bool operator< (const Iterator& a, const Iterator& b) { return a.m_ptr < b.m_ptr; };
+        friend bool operator> (const Iterator& a, const Iterator& b) { return a.m_ptr > b.m_ptr; };
+        friend bool operator>= (const Iterator& a, const Iterator& b) { return (a.m_ptr > b.m_ptr) || (a.m_ptr == b.m_ptr); };
+        friend bool operator<= (const Iterator& a, const Iterator& b) { return (a.m_ptr < b.m_ptr) || (a.m_ptr == b.m_ptr); };
+
+        Iterator& operator=(const Container::Iterator& other)
+        {
+            if (this == &other)
+                return *this;
+            *m_ptr = *other;
+            return *this;
+        }
+
+        Iterator& operator=(Iterator&& other) noexcept
+        {
+            if (this == &other)
+                return *this;
+            m_ptr = std::move(other.m_ptr);
+            other.m_ptr = nullptr;
+            return *this;
+        }
+
+        void swap(Iterator& other) { std::swap(*m_ptr, *other); }
 
     private:
         pointer m_ptr;
